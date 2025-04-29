@@ -24,24 +24,30 @@ fn main() {
 
     while game.winner.is_none() {
         print_board(&game);
-        println!("Player {:?}, type line and column (0-2):", game.current_player);
 
-        let mut input = String::new();
-        io::stdout().flush().unwrap();
-        io::stdin().read_line(&mut input).unwrap();
+        if game.current_player == game::Player::X {
+            println!("Player X, type line and column  (0-2):");
 
-        let coords: Vec<usize> = input
-            .split_whitespace()
-            .filter_map(|s| s.parse().ok())
-            .collect();
+            let mut input = String::new();
+            io::stdout().flush().unwrap();
+            io::stdin().read_line(&mut input).unwrap();
 
-        if coords.len() == 2 {
-            match game.play(coords[0], coords[1]) {
-                Ok(_) => continue,
-                Err(msg) => println!("Error: {}", msg),
+            let coords: Vec<usize> = input
+                .split_whitespace()
+                .filter_map(|s| s.parse().ok())
+                .collect();
+
+            if coords.len() == 2 {
+                match game.play(coords[0], coords[1]) {
+                    Ok(_) => continue,
+                    Err(msg) => println!("Error: {}", msg),
+                }
+            } else {
+                println!("Invalid input. Type two numbers.");
             }
         } else {
-            println!("Invalid input. Type two numbers.");
+            println!("AI (Player O) is playing...");
+            game.play_ai_move().unwrap();
         }
     }
 

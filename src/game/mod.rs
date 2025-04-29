@@ -1,4 +1,5 @@
 use std::collections::VecDeque;
+use rand::seq::SliceRandom;
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Player {
@@ -77,6 +78,34 @@ impl Game {
         (0..3).any(|i| b[0][i] == p && b[1][i] == p && b[2][i] == p) ||
         (b[0][0] == p && b[1][1] == p && b[2][2] == p) ||
         (b[0][2] == p && b[1][1] == p && b[2][0] == p)
+    }
+
+    pub fn play_ai_move(&mut self) -> Result<(), &'static str> {
+        if self.winner.is_some() {
+            return Err("Game ended");
+        }
+
+        if self.current_player != Player::O {
+            return Err("Not the AI turn");
+        }
+
+        let mut rng = rand::thread_rng();
+        let mut empty_cells = vec![];
+
+        for row in 0..3 {
+            for col in 0..3 {
+                if self.board[row][col] == Cell::Empty {
+                    empty_cells.push((row, col));
+                }
+            }
+        }
+
+        if empty_cells.is_empty() {
+            return Err("No valid movements");
+        }
+
+        let &(row, col) = empty_cells.choose(&mut rng).unwrap();
+        self.play(row, col)
     }
 }
 
