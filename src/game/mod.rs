@@ -13,6 +13,7 @@ pub enum Cell {
     Occupied(Player),
 }
 
+#[derive(Clone)]
 pub struct Game {
     pub board: [[Cell; 3]; 3],
     pub moves_x: VecDeque<(usize, usize)>,
@@ -89,9 +90,7 @@ impl Game {
             return Err("Not the AI turn");
         }
 
-        let mut rng = rand::thread_rng();
         let mut empty_cells = vec![];
-
         for row in 0..3 {
             for col in 0..3 {
                 if self.board[row][col] == Cell::Empty {
@@ -100,10 +99,27 @@ impl Game {
             }
         }
 
-        if empty_cells.is_empty() {
-            return Err("No valid movements");
+        // 1. Play to Win
+        for &(row, col) in &empty_cells {
+            let mut clone = self.clone();
+            clone.play(row, col).ok();
+            if clone.winner == Some(Player::O) {
+                return self.play(row, col);
+            }
         }
 
+        // 2. Block Player X
+        for &(row, col) in &empty_cells {
+            let mut clone = self.clone();
+            clone.current_player = Player::X;
+            clone.play(row, col).ok();
+            if clone.winner == Some(Player::X) {
+                return self.play(row, col);
+            }
+        }
+
+        // 3. Random play
+        let mut rng = rand::thread_rng();
         let &(row, col) = empty_cells.choose(&mut rng).unwrap();
         self.play(row, col)
     }
